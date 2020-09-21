@@ -1,6 +1,7 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdbool.h>
-#include <mem.h>
+#include <string.h>
 #include <malloc.h>
 #include <math.h>
 
@@ -18,29 +19,29 @@ struct node {
     char* code;
 };
 
-void char_to_bin (uc c, char* bin_code) {
+void char_to_bin(uc c, char* bin_code) {
     int k = 128;
     for (int i = 0; i < 8; ++i) {
-        bin_code[i] = (bool)(c&k) ? (char)'1' : (char)'0';
-        k>>=1;
+        bin_code[i] = (bool)(c & k) ? (char)'1' : (char)'0';
+        k >>= 1;
     }
     bin_code[8] = '\0';
 }
 
-void bin_to_char (const char* bin, uc* c) {
+void bin_to_char(const char* bin, uc* c) {
     int res = 0;
     for (int i = 0; i < 8; ++i) {
-        res += (int) pow(2, 7-i) * (bin[i] - '0');
+        res += (int)pow(2, 7 - i) * (bin[i] - '0');
     }
-    *c = (uc) res;
+    *c = (uc)res;
 }
 
-int print_bin (char* bin, FILE* fout, FILE* log) {
+int print_bin(char* bin, FILE* fout, FILE* log) {
     int size = strlen(bin);
     int bin_pos = 0;
     int k = 0;
     size_t zip_pos = 0;
-    uc* zipped = (uc*)malloc(sizeof(uc)*(BUF_SIZE + 1));
+    uc* zipped = (uc*)malloc(sizeof(uc) * (BUF_SIZE + 1));
     if (zipped == NULL) {
         fprintf(log, "mem error");
         exit(0);
@@ -59,7 +60,7 @@ int print_bin (char* bin, FILE* fout, FILE* log) {
         uc tmp;
         bin_to_char(bin8, &tmp);
         zipped[zip_pos] = tmp;
-        zipped[zip_pos+1] = '\0';
+        zipped[zip_pos + 1] = '\0';
         zip_pos++;
     }
     fwrite(zipped, sizeof(unsigned char), zip_pos, fout);
@@ -67,7 +68,7 @@ int print_bin (char* bin, FILE* fout, FILE* log) {
     return k;
 }
 
-node* build_tree (node* mas, int symb_sum) {
+node* build_tree(node* mas, int symb_sum) {
     node* min1 = (mas[0].sum < mas[1].sum) ? &mas[0] : &mas[1];
     node* min2 = (mas[0].sum < mas[1].sum) ? &mas[1] : &mas[0];
     for (int i = 2; i < symb_sum; ++i) {
@@ -96,7 +97,7 @@ node* build_tree (node* mas, int symb_sum) {
     return build_tree(mas, symb_sum);
 }
 
-void get_code (node* cur_node, char cur_code[], int cur_pos) {
+void get_code(node* cur_node, char cur_code[], int cur_pos) {
     if (cur_node->is_leaf) {
         if (cur_pos == 0) {
             strcpy(cur_node->code, "1\0");
@@ -108,12 +109,12 @@ void get_code (node* cur_node, char cur_code[], int cur_pos) {
     }
 
     cur_code[cur_pos] = '0';
-    get_code(cur_node->to0, cur_code, cur_pos+1);
+    get_code(cur_node->to0, cur_code, cur_pos + 1);
     cur_code[cur_pos] = '1';
-    get_code(cur_node->to1, cur_code, cur_pos+1);
+    get_code(cur_node->to1, cur_code, cur_pos + 1);
 }
 
-void make_dir (node* cur_node, char* cur_dir, int* cur_size) {
+void make_dir(node* cur_node, char* cur_dir, int* cur_size) {
     if (cur_node->is_leaf) {
         cur_dir[*cur_size] = '0';
         (*cur_size)++;
@@ -160,8 +161,8 @@ void make_dir (node* cur_node, char* cur_dir, int* cur_size) {
     }
 }
 
-void zip (FILE* fin, FILE* fout, FILE* log) {
-    node* nodes = (node*)malloc(sizeof(node)*513);
+void zip(FILE* fin, FILE* fout, FILE* log) {
+    node* nodes = (node*)malloc(sizeof(node) * 513);
     if (nodes == NULL) {
         fprintf(log, "mem error");
         exit(0);
@@ -172,21 +173,21 @@ void zip (FILE* fin, FILE* fout, FILE* log) {
         nodes[i].to1 = NULL;
         nodes[i].symb = (uc)i;
         nodes[i].sum = 0;
-        nodes[i].code = (char*)malloc(sizeof(char)*100);
+        nodes[i].code = (char*)malloc(sizeof(char) * 100);
         if (nodes[i].code == NULL) {
             fprintf(log, "mem error");
             exit(0);
         }
     }
 
-    uc* text = (uc*)malloc(sizeof(uc)*(BUF_SIZE + 1));
+    uc* text = (uc*)malloc(sizeof(uc) * (BUF_SIZE + 1));
     if (text == NULL) {
         fprintf(log, "mem error");
         exit(0);
     }
     int to_zip_size = 0;
 
-    while(1) {
+    while (1) {
         int fsize = fread(text, sizeof(uc), BUF_SIZE, fin);
         if (fsize == 0) break;
 
@@ -210,7 +211,7 @@ void zip (FILE* fin, FILE* fout, FILE* log) {
     char start_code[101];
     get_code(root, start_code, 0);
 
-    char* bin_zip = (char*)malloc(sizeof(char)*(8*(BUF_SIZE + 1)) + 1);
+    char* bin_zip = (char*)malloc(sizeof(char) * (8 * (BUF_SIZE + 1)) + 1);
     if (bin_zip == NULL) {
         fprintf(log, "mem error");
         exit(0);
@@ -229,7 +230,7 @@ void zip (FILE* fin, FILE* fout, FILE* log) {
             bin_zip[code_size] = nodes[text[i]].code[j];
             bin_zip[code_size + 1] = '\0';
             code_size++;
-            if (code_size == 8*BUF_SIZE) {
+            if (code_size == 8 * BUF_SIZE) {
                 print_bin(bin_zip, fout, log);
                 code_size = 0;
                 bin_zip[0] = '\0';
@@ -247,7 +248,7 @@ void zip (FILE* fin, FILE* fout, FILE* log) {
     free(bin_zip);
 }
 
-node* build_unzip_tree (const char* bin, int* cur_pos, node* cur_node, int* free_node_pos, node* nodes) {
+node* build_unzip_tree(const char* bin, int* cur_pos, node* cur_node, int* free_node_pos, node* nodes) {
     if (bin[*cur_pos] == '0') {
         cur_node->is_leaf = true;
         (*cur_pos)++;
@@ -272,9 +273,9 @@ node* build_unzip_tree (const char* bin, int* cur_pos, node* cur_node, int* free
     }
 }
 
-void decode (FILE* fout, char* bin, int* cur_pos, node* root, int end_pos, int last_byte, FILE* log, FILE* fin, uc* zip_text) {
+void decode(FILE* fout, char* bin, int* cur_pos, node* root, int end_pos, int last_byte, FILE* log, FILE* fin, uc* zip_text) {
     node* cur_node = root;
-    uc* out = (uc*)malloc(sizeof(uc)*(8*(BUF_SIZE + 1)));
+    uc* out = (uc*)malloc(sizeof(uc) * (8 * (BUF_SIZE + 1)));
     if (out == NULL) {
         fprintf(log, "mem error");
         exit(0);
@@ -283,7 +284,7 @@ void decode (FILE* fout, char* bin, int* cur_pos, node* root, int end_pos, int l
     size_t out_pos = 0;
 
     for (; *cur_pos < end_pos; ++(*cur_pos)) {
-        if (end_pos - (*cur_pos) == last_byte && end_pos < 8*(BUF_SIZE-1)) {
+        if (end_pos - (*cur_pos) == last_byte && end_pos < 8 * (BUF_SIZE - 1)) {
             fwrite(out, sizeof(uc), out_pos, fout);
             break;
         }
@@ -313,7 +314,7 @@ void decode (FILE* fout, char* bin, int* cur_pos, node* root, int end_pos, int l
 
         if (*cur_pos == end_pos - 1) {
             fwrite(out, sizeof(uc), out_pos, fout);
-            int fsize = fread(zip_text, sizeof(uc), (size_t)(BUF_SIZE-1), fin);
+            int fsize = fread(zip_text, sizeof(uc), (size_t)(BUF_SIZE - 1), fin);
             if (fsize == 0) break;
             char bin_code[9];
             char_to_bin((uc)(last_byte + '0'), &bin_code[0]);
@@ -337,13 +338,13 @@ void decode (FILE* fout, char* bin, int* cur_pos, node* root, int end_pos, int l
     }
 }
 
-void unzip (FILE* fin, FILE* fout, FILE* log) {
-    uc* zip_text = (uc*)malloc(sizeof(uc)*(BUF_SIZE + 1));
+void unzip(FILE* fin, FILE* fout, FILE* log) {
+    uc* zip_text = (uc*)malloc(sizeof(uc) * (BUF_SIZE + 1));
     if (zip_text == NULL) {
         fprintf(log, "mem error");
         exit(0);
     }
-    char* bin_zip = (char*)malloc(sizeof(char)*(8*(BUF_SIZE + 1) + 1));
+    char* bin_zip = (char*)malloc(sizeof(char) * (8 * (BUF_SIZE + 1) + 1));
     if (bin_zip == NULL) {
         fprintf(log, "mem error");
         exit(0);
@@ -367,7 +368,7 @@ void unzip (FILE* fin, FILE* fout, FILE* log) {
     if (unzip_size == 0) exit(0);
 
     int cur_pos = 0;
-    node* nodes = (node*)malloc(sizeof(node)*512);
+    node* nodes = (node*)malloc(sizeof(node) * 512);
     if (nodes == NULL) {
         fprintf(log, "mem error");
         exit(0);
