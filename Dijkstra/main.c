@@ -35,7 +35,7 @@ int path(int* j, int n)
 }
 void DIJKSTRA(int** G, int N, int s, int f)
 {
-    int* blue = calloc(N, sizeof(*blue)), * dmin = malloc(N * sizeof(int)), * d = calloc(N, sizeof(int)), i = 0, j = 0, jmin = 1, k = 0, end;
+    int* blue = calloc(N, sizeof(*blue)), * dmin = calloc(N, sizeof(int)), * d = calloc(N, sizeof(int)), i = 0, j = 0, jmin = 1, k = 0, end;
     if (!blue || !dmin || !d)
     {
         printf("Allocation error.");
@@ -115,10 +115,22 @@ void DIJKSTRA(int** G, int N, int s, int f)
 
 int main()
 {
-    int N, S, F, M, s, f, lng, i, ** A;
-    scanf("%d", &N);
-    scanf("%d %d", &S, &F);
-    scanf("%d", &M);
+    int N=0, S, F, M=0, s, f, lng, i, ** A;
+    if (scanf("%d", &N) == EOF)
+    {
+        printf("bad number of lines");
+        return 0;
+    }
+    if (scanf("%d", &M) == EOF)
+    {
+        printf("bad number of lines");
+        return 0;
+    }
+    if (scanf("%d %d", &S, &F) == EOF)
+    {
+        printf("bad number of lines");
+        return 0;
+    }
     A = (int**)malloc(N * sizeof(int*));
     if (!A)
     {
