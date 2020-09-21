@@ -96,10 +96,18 @@ void Kruskal(edge* edges, int N, int M, int* nodes)
 
 int main() {
 
-    int N, M, s, f, lng, i, * nodes;
+    int N=0, M=0, s, f, lng, i, * nodes;
     edge* Edges = NULL;
-    scanf("%d", &N);
-    scanf("%d", &M);
+    if (scanf("%d", &N) == EOF)
+    {
+        printf("bad number of lines");
+        return 0;
+    }
+    if (scanf("%d", &M) == EOF)
+    {
+        printf("bad number of lines");
+        return 0;
+    }
     Edges = (edge*)malloc((M) * sizeof(edge));
     nodes = (int*)calloc(N, sizeof(int));
     if (!Edges)
